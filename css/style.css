@@ -234,24 +234,13 @@ table tr:hover {
   button {
       width: 100%;
   }
+  input[type=date]{
+    width: 100%;
+  }
   table th, table td {
       font-size: 12px;
       padding: 6px;
   }
-}
-
-@media (max-width: 650px) {
-  button {
-    width: 150px;
-  }
-  input[type=date]{
-    width: 120px;
-  }
-  .btn-container{
-    align-items: center;
-    flex-direction: column;
-  }
-  
 }
 
 /* Tablet Styles */
