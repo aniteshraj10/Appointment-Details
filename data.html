@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Display Appointments</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <div class="testbox">
+    <section>
+      <div class="banner">
+        <h1>Appointments</h1>
+      </div>
+      <div class="btn-container">
+        <button id="showAll">Show All</button>
+        <input type="date" id="searchDate">
+        <button id="searchByDate">Search by Date</button>
+      </div>
+      <table id="appointmentsTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Gender</th>
+            <th>Date</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Appointments will be displayed here -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- Load Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js"></script>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js';
+    import { getDatabase, ref, onValue, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApw7ZcPPBkJa8kC3WTzKrSGmfxFiooJkE",
+      authDomain: "mj-appointment.firebaseapp.com",
+      databaseURL: "https://mj-appointment-default-rtdb.firebaseio.com",
+      projectId: "mj-appointment",
+      storageBucket: "mj-appointment.appspot.com",
+      messagingSenderId: "876823625049",
+      appId: "1:876823625049:web:292f3a3c57937dc92e6048"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth(app);
+    const dbRef = ref(database, 'Collected Data');
+
+    function checkAuthAndFetchData() {
+      const userLoggedIn = sessionStorage.getItem('userLoggedIn');
+      if (userLoggedIn === 'true') {
+        fetchData();
+      } else {
+        window.location.href = 'index.html'; // Redirect to login page if not authenticated
+      }
+    }
+
+    function fetchData() {
+      onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          displayAppointments(data);
+        } else {
+          console.log('No data available or data is null.');
+        }
+      }, (error) => {
+        console.error('Error fetching data:', error);
+      });
+    }
+
+    function displayAppointments(data, filter = 'all', searchDate = null) {
+      const tableBody = document.querySelector('#appointmentsTable tbody');
+      tableBody.innerHTML = ''; // Clear any existing content
+
+      const today = new Date().toISOString().split('T')[0];
+
+      for (const id in data) {
+        const appointment = data[id];
+        const appointmentDate = appointment.date;
+
+        if (filter === 'today' && appointmentDate !== today) {
+          continue;
+        }
+
+        if (filter === 'date' && appointmentDate !== searchDate) {
+          continue;
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${appointment.name || ''}</td>
+          <td>${appointment.phone || ''}</td>
+          <td>${appointment.gender || ''}</td>
+          <td>${appointment.date || ''}</td>
+          <td>${appointment.time || ''}</td>
+        `;
+        tableBody.appendChild(row);
+      }
+    }
+
+    // Event listeners for buttons
+    document.getElementById('showAll').addEventListener('click', () => {
+      fetchData();
+    });
+
+    document.getElementById('searchByDate').addEventListener('click', () => {
+      const searchDate = document.getElementById('searchDate').value;
+      if (searchDate) {
+        const dateQuery = query(dbRef, orderByChild('date'), equalTo(searchDate));
+        onValue(dateQuery, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            displayAppointments(data, 'date', searchDate);
+          } else {
+            console.log('No data available for this date.');
+          }
+        }, (error) => {
+          console.error('Error fetching data by date:', error);
+        });
+      } else {
+        alert('Please select a date.');
+      }
+    });
+
+    // Check authentication on page load
+    checkAuthAndFetchData();
+
+    // Optional: Clear session storage on page unload to ensure logout
+    window.addEventListener('beforeunload', () => {
+      sessionStorage.removeItem('userLoggedIn');
+    });
+  </script>
+</body>
+</html>

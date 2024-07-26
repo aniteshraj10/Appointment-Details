@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Appointment</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <div class="testbox">
+      <form action="/" id="appointmentform" novalidate>
+        <div class="banner">
+          <h1>SARASWATHI CLINIC</h1>
+        </div>
+        <div class="item">
+          <p>Email</p>
+          <div class="item">
+            <input type="email" name="email" id="email" placeholder="email" required aria-label="Email">
+          </div>
+        </div>
+        <div class="item">
+          <p>Password</p>
+          <input type="password" name="pswd" id="pswd" placeholder="******" required aria-label="Password">
+         </div>
+        <div class="btn-block">
+          <button type="submit">Login</button>
+        </div>
+      </form>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js';
+      import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js';
+
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyApw7ZcPPBkJa8kC3WTzKrSGmfxFiooJkE",
+        authDomain: "mj-appointment.firebaseapp.com",
+        databaseURL: "https://mj-appointment-default-rtdb.firebaseio.com",
+        projectId: "mj-appointment",
+        storageBucket: "mj-appointment.appspot.com",
+        messagingSenderId: "876823625049",
+        appId: "1:876823625049:web:292f3a3c57937dc92e6048"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      document.getElementById('appointmentform').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('pswd').value;
+
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          // Successful login
+          sessionStorage.setItem('userLoggedIn', 'true'); // Set a flag in session storage
+          history.pushState(null, null, 'data.html'); // Change URL without leaving the page
+          window.location.href = 'data.html'; // Redirect to data display page
+        } catch (error) {
+          console.error('Error signing in:', error);
+          let errorMessage = 'Authentication failed. Please check your credentials.';
+          if (error.code === 'auth/wrong-password') {
+            errorMessage = 'Incorrect password. Please try again.';
+          } else if (error.code === 'auth/user-not-found') {
+            errorMessage = 'No user found with this email.';
+          }
+          alert(errorMessage);
+        }
+      });
+
+      // Prevent back navigation to login page if logged in
+      window.onpopstate = function(event) {
+        if (sessionStorage.getItem('userLoggedIn')) {
+          history.go(1); // Go forward if trying to go back
+        }
+      };
+
+
+
+
+    </script>
+  </body>
+</html>
