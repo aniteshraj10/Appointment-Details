@@ -114,6 +114,7 @@
     // Event listeners for buttons
     document.getElementById('showAll').addEventListener('click', () => {
       fetchData();
+      document.getElementById('searchDate').value = '';
     });
 
     document.getElementById('searchByDate').addEventListener('click', () => {
